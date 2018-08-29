@@ -169,20 +169,15 @@ class Client(object):
         >>> c.open_by_key('0BmgG6nO_6dprdS1MN3d3MkdPa142WFRrdnRRUWl1UFE')
 
         """
-        feed = self.get_spreadsheets_feed()
-        for elem in feed.findall(_ns('entry')):
-            alter_link = finditem(lambda x: x.get('rel') == 'alternate',
-                                  elem.findall(_ns('link')))
-            m = _url_key_re_v1.search(alter_link.get('href'))
-            if m and m.group(1) == key:
-                return Spreadsheet(self, elem)
-
-            m = _url_key_re_v2.search(alter_link.get('href'))
-            if m and m.group(1) == key:
-                return Spreadsheet(self, elem)
-
-        else:
-            raise SpreadsheetNotFound
+        try:
+            s = Spreadsheet(self, None, key=key)
+            s.worksheets()
+        except HTTPError, e:
+            if e.code == 400:
+                raise SpreadsheetNotFound
+            else:
+                raise e
+        return s
 
     def open_by_url(self, url):
         """Opens a spreadsheet specified by `url`,

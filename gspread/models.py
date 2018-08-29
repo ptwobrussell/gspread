@@ -56,14 +56,18 @@ class Spreadsheet(object):
 
     """ A class for a spreadsheet object."""
 
-    def __init__(self, client, feed_entry):
+    def __init__(self, client, feed_entry, key=None):
         self.client = client
         self._sheet_list = []
         self._feed_entry = feed_entry
+        self._key = key
 
     @property
     def id(self):
-        return self._feed_entry.find(_ns('id')).text.split('/')[-1]
+        if self._key:
+            return self._key
+        else:
+            return self._feed_entry.find(_ns('id')).text.split('/')[-1]
 
     def get_id_fields(self):
         return {'spreadsheet_id': self.id}
@@ -166,7 +170,10 @@ class Spreadsheet(object):
 
     @property
     def title(self):
-        return self._feed_entry.find(_ns('title')).text
+        if self._feed_entry:
+            return self._feed_entry.find(_ns('title')).text
+        else:
+            return u""
 
     def __iter__(self):
         for sheet in self.worksheets():
